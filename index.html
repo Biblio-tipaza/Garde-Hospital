@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام مداومة مستشفى قوراية - النسخة النهائية</title>
+    <style>
+        /* الخطوط العامة */
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; background-color: #d1e9ff; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        /* --- واجهة تسجيل الدخول --- */
+        #loginPage {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-card {
+            background-color: #005f6b; 
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 380px;
+            text-align: center;
+            border: 2px solid #ffffff;
+        }
+        .logo-container {
+            background-color: white; width: 100px; height: 100px;
+            margin: 0 auto 1.5rem auto; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-container img { max-width: 80px; height: auto; }
+        .login-card h2, .login-card label { color: #ffffff; }
+        .input-group { text-align: right; margin-bottom: 1.5rem; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: none; background-color: #f8f9fa; }
+        .btn-login { width: 100%; padding: 12px; background-color: #ffffff; color: #005f6b; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        #error-msg { color: #ffcdd2; font-size: 14px; margin-top: 10px; display: none; }
+
+        /* --- واجهة النظام الرئيسية --- */
+        #mainSystem { display: none; }
+
+        .setup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .config-window {
+            background: white; width: 850px; padding: 30px; border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); border: 3px solid #1976d2;
+        }
+        .config-title-box { border: 2px solid #d32f2f; padding: 10px; text-align: center; margin-bottom: 25px; background-color: #fff5f5; }
+        .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 24px; }
+
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .field { display: flex; flex-direction: column; text-align: right; }
+        .field label { font-weight: bold; margin-bottom: 5px; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
+
+        .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 15px; }
+        .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
+        .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
+
+        .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 500; }
+        .top-toolbar button { padding: 8px 25px; margin: 0 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
+
+        /* --- تنسيق الورقة A4 للطباعة --- */
+        .a4-page { 
+            width: 210mm; min-height: 297mm; padding: 10mm 15mm; margin: 20px auto;
+            background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: none; flex-direction: column; 
+            font-family: 'Times New Roman', Times, serif; 
+        }
+
+        /* تعديل الخطوط العلوية (الدائرة 1) لتكون 17pt غليظة لتنافس العنوان */
+        .header-top { text-align: center; font-weight: bold; font-size: 17pt; text-decoration: underline; margin-bottom: 5px; }
+        .header-ministry { text-align: center; font-weight: bold; font-size: 17pt; margin-bottom: 15px; }
+        
+        .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
+        .side-box { width: 45%; font-size: 15pt; font-weight: bold; line-height: 1.4; }
+        .center-box { width: 10%; text-align: center; }
+        .main-logo { width: 90px; height: 90px; object-fit: contain; }
+
+        /* العنوان الرئيسي (الدائرة 2) */
+        .report-title { border: 2px solid #000; padding: 8px; margin: 10px auto; width: 90%; text-align: center; font-weight: bold; font-size: 18pt; background: #f2f2f2; }
+        .coord-txt { text-align: right; font-weight: bold; font-size: 15pt; margin-bottom: 8px; text-decoration: underline; }
+
+        table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
+        th, td { border: 1.5px solid #000; padding: 6px; text-align: center; color: black; font-weight: bold; }
+        th { background: #eee; font-size: 13pt; }
+        td { font-size: 12pt; }
+        .weekend-bg { background: #f0f0f0 !important; }
+
+        .footer-area { margin-top: auto; padding: 30px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 14pt; }
+
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .a4-page { display: flex !important; border: none; box-shadow: none; margin: 0; width: 100%; height: 100%; }
+            @page { size: A4; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginPage">
+        <div class="login-card">
+            <div class="logo-container"><img src="logo.png" alt="logo"></div>
+            <h2>الدخول للنظام</h2>
+            <div class="input-group">
+                <label>اسم المستخدم:</label>
+                <input type="text" id="userInput" placeholder="Admin">
+            </div>
+            <div class="input-group">
+                <label>كلمة المرور:</label>
+                <input type="password" id="passInput" placeholder="••••••••">
+            </div>
+            <p id="error-msg">خطأ في اسم المستخدم أو كلمة المرور!</p>
+            <button class="btn-login" onclick="checkLogin()">تسجيل الدخول</button>
+        </div>
+    </div>
+
+    <div id="mainSystem">
+        <div id="setupOverlay" class="setup-overlay no-print">
+            <div class="config-window">
+                <div class="config-title-box"><h2>إعدادات جدول المداومة</h2></div>
+                <div class="input-grid">
+                    <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
+                    <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
+                    <div class="field">
+                        <label>اختيار المنسق:</label>
+                        <select id="inCoord">
+                            <option value="بن رقية شيراز">بن رقية شيراز</option>
+                            <option value="عريج حورية">عريج حورية</option>
+                            <option value="براهمي امين">براهمي امين</option>
+                            <option value="زحالي خيرة">زحالي خيرة</option>
+                            <option value="بن عمار رانيا">بن عمار رانيا</option>
+                            <option value="براهمي كهينة">براهمي كهينة</option>
+                            <option value="عبدي اسيا">عبدي اسيا</option>
+                            <option value="بن وحليمة راضية">بن وحليمة راضية</option>
+                            <option value="ايماموين حميد">ايماموين حميد</option>
+                            <option value="عيدار عبد الحكيم">عيدار عبد الحكيم</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>موظف في عطلة:</label>
+                        <select id="inVacStaff">
+                            <option value="">-- لا يوجد --</option>
+                            <option value="ايماموين حميد">ايماموين حميد</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>بداية العطلة:</label><input type="date" id="inVacS"></div>
+                    <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
+                    <div class="actions-row">
+                        <button class="btn-generate" onclick="generate()">توليد الجدول للطباعة</button>
+                        <button class="btn-exit" onclick="location.reload()">خروج</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="toolbar" class="top-toolbar no-print" style="display:none">
+            <button style="background:#f8f9fa" onclick="goBack()">العودة للإعدادات</button>
+            <button style="background:#28a745; color:white" onclick="window.print()">إرسال إلى الطابعة</button>
+        </div>
+
+        <div id="paperA4" class="a4-page">
+            <div class="header-top">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+            <div class="header-ministry">وزارة الصحة</div>
+            
+            <div class="header-layout">
+                <div class="side-box" style="text-align: right;">
+                    مديرية الصحة والسكان لولاية تيبازة<br>
+                    المؤسسة العمومية الاستشفائية بقوراية<br>
+                    وحدة التخدير والإنعاش<br>
+                    الرقم: <span id="outRefNum">.......</span> / <span id="outYear">2026</span>
+                </div>
+                <div class="center-box"><img src="logo.png" class="main-logo"></div>
+                <div class="side-box" style="text-align: left; padding-top: 50px;">قوراية في: .........................</div>
+            </div>
+
+            <div class="report-title" id="outTitle">جدول مداومة الأعوان الطبيين</div>
+            <div class="coord-txt">السيدة <span id="outCoord">...</span> : منسق</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:18%">التاريخ</th>
+                        <th style="width:14%">اليوم</th>
+                        <th>القاعة A</th>
+                        <th>القاعة B</th>
+                        <th>القاعة C (الليل)</th>
+                    </tr>
+                </thead>
+                <tbody id="outBody"></tbody>
+            </table>
+
+            <div id="outVacNote" style="margin-top:10px; font-weight:bold; text-align:right; font-size:13pt;"></div>
+
+            <div class="footer-area">
+                <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
+                <div style="text-align:center">رئيسة وحدة التخدير<br>والإنعاش</div>
+                <div style="text-align:center">السيد المدير</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const personnel = ["عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "ايماموين حميد", "بن وحليمة راضية", "عيدار عبد الحكيم"];
+
+        function checkLogin() {
+            const user = document.getElementById('userInput').value;
+            const pass = document.getElementById('passInput').value;
+            if (user === "Admin" && pass === "Azerty@2026") {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainSystem').style.display = 'block';
+                document.body.style.backgroundColor = "#e3f2fd";
+            } else {
+                document.getElementById('error-msg').style.display = "block";
+            }
+        }
+
+        function generate() {
+            const dateVal = document.getElementById('inFullDate').value;
+            if(!dateVal) return alert("اختر التاريخ");
+            
+            const date = new Date(dateVal);
+            const selectedYear = date.getFullYear();
+            
+            document.getElementById('outYear').innerText = selectedYear;
+            document.getElementById('outRefNum').innerText = document.getElementById('inRef').value || ".......";
+            document.getElementById('outCoord').innerText = document.getElementById('inCoord').value;
+            
+            const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            document.getElementById('outTitle').innerText = `جدول مداومة الأعوان الطبيين لشهر ${months[date.getMonth()]} ${selectedYear}`;
+            
+            const tbody = document.getElementById('outBody');
+            tbody.innerHTML = "";
+            let current = new Date(date);
+            let currentMonth = date.getMonth();
+            const refDate = new Date(selectedYear + "-01-01");
+
+            while(current.getMonth() === currentMonth) {
+                let dName = current.toLocaleDateString('ar-DZ', {weekday: 'long'});
+                let isW = (dName === 'الجمعة' || dName === 'السبت');
+                let diff = Math.floor((current - refDate)/(1000*60*60*24));
+                let n = personnel.length;
+                let idx = ((diff % n) + n) % n;
+
+                tbody.innerHTML += `<tr class="${isW ? 'weekend-bg' : ''}">
+                    <td>${current.toLocaleDateString('en-GB')}</td>
+                    <td>${dName}</td>
+                    <td>${personnel[(idx + 4) % n]}</td>
+                    <td>${isW ? "" : personnel[(idx + 7) % n]}</td>
+                    <td>${personnel[idx]}</td>
+                </tr>`;
+                current.setDate(current.getDate() + 1);
+            }
+
+            document.getElementById('setupOverlay').style.display = 'none';
+            document.getElementById('toolbar').style.display = 'block';
+            document.getElementById('paperA4').style.display = 'flex';
+        }
+
+        function goBack() {
+            document.getElementById('setupOverlay').style.display = 'flex';
+            document.getElementById('toolbar').style.display = 'none';
+            document.getElementById('paperA4').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
