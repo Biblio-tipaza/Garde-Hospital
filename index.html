@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="fr" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مداومة مستشفى قوراية - النسخة النهائية A4</title>
+    <title>نظام مداومة مستشفى قوراية - النسخة النهائية</title>
     <style>
         /* الخطوط العامة */
         * { box-sizing: border-box; }
@@ -12,8 +12,8 @@
         /* --- واجهة تسجيل الدخول --- */
         #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; }
         .login-card { background-color: #005f6b; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 380px; text-align: center; border: 2px solid #ffffff; }
-        .logo-container { background-color: white; width: 80px; height: 80px; margin: 0 auto 1.5rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .logo-container img { max-width: 60px; height: auto; }
+        .logo-container { background-color: white; width: 100px; height: 100px; margin: 0 auto 1.5rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .logo-container img { max-width: 80px; height: auto; }
         .login-card h2, .login-card label { color: #ffffff; }
         .input-group { text-align: right; margin-bottom: 1.5rem; }
         .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
@@ -29,8 +29,12 @@
         .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 24px; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .field { display: flex; flex-direction: column; text-align: right; }
-        .field label { font-weight: bold; margin-bottom: 5px; }
-        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
+        .field label { font-weight: bold; margin-bottom: 5px; color: #333; }
+        
+        /* تنسيق التاريخ jj/mm/aaaa */
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; font-family: sans-serif; }
+        input[type="date"] { direction: ltr; text-align: right; }
+
         .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 15px; }
         .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
         .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
@@ -38,11 +42,11 @@
         .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 500; }
         .top-toolbar button { padding: 8px 25px; margin: 0 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
 
-        /* --- تنسيق الورقة A4 الدقيق للطباعة --- */
+        /* --- تنسيق الورقة A4 للطباعة --- */
         .a4-page { 
             width: 210mm; 
             height: 297mm; 
-            padding: 15mm 10mm 5mm 10mm; /* تم تعديل التهميش العلوي إلى 1.5 سم (15mm) */
+            padding: 15mm 10mm 5mm 10mm; 
             margin: 10px auto;
             background: white; 
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
@@ -58,20 +62,28 @@
         .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
         .side-box { width: 45%; font-size: 11pt; font-weight: bold; line-height: 1.4; }
         .center-box { width: 10%; text-align: center; }
-        .main-logo { width: 60px; height: 60px; object-fit: contain; }
+        
+        .main-logo { width: 85px; height: 85px; object-fit: contain; }
 
-        .report-title { border: 2px solid #000; padding: 4px; margin: 5px auto; width: 98%; text-align: center; font-weight: bold; font-size: 13pt; background: #f2f2f2; }
-        .coord-txt { text-align: right; font-weight: bold; font-size: 12pt; margin-bottom: 3px; text-decoration: underline; }
+        .report-title { border: 2.5px solid #000; padding: 6px; margin: 5px auto; width: 98%; text-align: center; font-weight: bold; font-size: 13pt; background: #f2f2f2; }
+        .coord-txt { text-align: right; font-weight: bold; font-size: 12pt; margin-bottom: 5px; text-decoration: underline; }
 
-        /* تعديل الكتابة داخل الجدول لتكون غليظة */
-        table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 3px 2px; text-align: center; color: black; font-weight: bold; line-height: 1.1; }
+        table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
+        th, td { border: 1.5px solid #000; padding: 3px 2px; text-align: center; color: black; font-weight: bold; line-height: 1.1; }
         th { background: #e0e0e0; font-size: 10.5pt; }
         td { font-size: 10pt; }
         
         .weekend-bg { background-color: #f2f2f2 !important; }
 
-        .footer-area { margin-top: 15px; padding: 0 0 10px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 11pt; }
+        /* --- تعديل منطقة التوقيعات لرفعها للأعلى --- */
+        .footer-area { 
+            margin-top: 15px; /* مسافة بسيطة تحت الجدول */
+            padding: 0; 
+            display: flex; 
+            justify-content: space-between; 
+            font-weight: bold; 
+            font-size: 11pt; 
+        }
 
         @media print {
             body { background: white; margin: 0; padding: 0; }
@@ -83,7 +95,7 @@
                 margin: 0; 
                 width: 210mm; 
                 height: 297mm; 
-                padding: 15mm 10mm 5mm 10mm; /* تطبيق التهميش العلوي 1.5 سم عند الطباعة */
+                padding: 15mm 10mm 5mm 10mm; 
                 page-break-after: avoid;
             }
             @page { size: A4; margin: 0; }
@@ -115,16 +127,10 @@
             <div class="config-window">
                 <div class="config-title-box"><h2>إعدادات جدول المداومة</h2></div>
                 <div class="input-grid">
-                    <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
+                    <div class="field"><label>تاريخ بداية الجدول (jj/mm/aaaa):</label><input type="date" id="inFullDate" value="2026-04-01"></div>
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
-                    <div class="field">
-                        <label>اختيار المنسق:</label>
-                        <select id="inCoord"></select>
-                    </div>
-                    <div class="field">
-                        <label>موظف في عطلة:</label>
-                        <select id="inVacStaff"></select>
-                    </div>
+                    <div class="field"><label>اختيار المنسق:</label><select id="inCoord"></select></div>
+                    <div class="field"><label>موظف في عطلة:</label><select id="inVacStaff"></select></div>
                     <div class="field"><label>بداية العطلة:</label><input type="date" id="inVacS"></div>
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
                     <div class="actions-row">
@@ -178,7 +184,7 @@
                 <tbody id="outBody"></tbody>
             </table>
 
-            <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt; color: black;"></div>
+            <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt;"></div>
 
             <div class="footer-area">
                 <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
@@ -243,11 +249,10 @@
 
             const date = new Date(dateVal);
             const selectedYear = date.getFullYear();
-            
             const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            
             document.getElementById('outMonthName').innerText = months[date.getMonth()];
             document.getElementById('outYearTitle').innerText = selectedYear;
-
             document.getElementById('outYear').innerText = selectedYear;
             document.getElementById('outRefNum').innerText = document.getElementById('inRef').value || ".......";
             document.getElementById('outCoord').innerText = document.getElementById('inCoord').value;
