@@ -3,34 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مداومة مستشفى قوراية - النسخة النهائية</title>
+    <title>نظام مداومة مستشفى قوراية - النسخة النهائية A4</title>
     <style>
         /* الخطوط العامة */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background-color: #d1e9ff; font-family: 'Segoe UI', Tahoma, sans-serif; }
 
         /* --- واجهة تسجيل الدخول --- */
-        #loginPage {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .login-card {
-            background-color: #005f6b; 
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 380px;
-            text-align: center;
-            border: 2px solid #ffffff;
-        }
-        .logo-container {
-            background-color: white; width: 100px; height: 100px;
-            margin: 0 auto 1.5rem auto; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .logo-container img { max-width: 80px; height: auto; }
+        #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background-color: #005f6b; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 380px; text-align: center; border: 2px solid #ffffff; }
+        .logo-container { background-color: white; width: 80px; height: 80px; margin: 0 auto 1.5rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .logo-container img { max-width: 60px; height: auto; }
         .login-card h2, .login-card label { color: #ffffff; }
         .input-group { text-align: right; margin-bottom: 1.5rem; }
         .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
@@ -40,24 +23,14 @@
 
         /* --- واجهة النظام الرئيسية --- */
         #mainSystem { display: none; }
-
-        .setup-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-        }
-        .config-window {
-            background: white; width: 850px; padding: 30px; border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4); border: 3px solid #1976d2;
-        }
+        .setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .config-window { background: white; width: 850px; padding: 30px; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); border: 3px solid #1976d2; }
         .config-title-box { border: 2px solid #d32f2f; padding: 10px; text-align: center; margin-bottom: 25px; background-color: #fff5f5; }
         .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 24px; }
-
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .field { display: flex; flex-direction: column; text-align: right; }
         .field label { font-weight: bold; margin-bottom: 5px; }
         .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
-
         .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 15px; }
         .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
         .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
@@ -65,44 +38,60 @@
         .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 500; }
         .top-toolbar button { padding: 8px 25px; margin: 0 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
 
-        /* --- تنسيق الورقة A4 للطباعة --- */
+        /* --- تنسيق الورقة A4 الدقيق للطباعة --- */
         .a4-page { 
-            width: 210mm; min-height: 297mm; padding: 10mm 15mm; margin: 20px auto;
-            background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            display: none; flex-direction: column; 
+            width: 210mm; 
+            height: 296mm; 
+            padding: 2mm 10mm; 
+            margin: 10px auto;
+            background: white; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: none; 
+            flex-direction: column; 
+            overflow: hidden;
             font-family: 'Times New Roman', Times, serif; 
         }
 
-        /* تعديل الخطوط العلوية (الدائرة 1) لتكون 17pt غليظة لتنافس العنوان */
-        .header-top { text-align: center; font-weight: bold; font-size: 17pt; text-decoration: underline; margin-bottom: 5px; }
-        .header-ministry { text-align: center; font-weight: bold; font-size: 17pt; margin-bottom: 15px; }
+        .header-top { text-align: center; font-weight: bold; font-size: 12pt; text-decoration: underline; margin-bottom: 2px; }
+        .header-ministry { text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 8px; }
         
-        .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
-        .side-box { width: 45%; font-size: 15pt; font-weight: bold; line-height: 1.4; }
+        .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
+        .side-box { width: 45%; font-size: 11pt; font-weight: bold; line-height: 1.4; }
         .center-box { width: 10%; text-align: center; }
-        .main-logo { width: 90px; height: 90px; object-fit: contain; }
+        .main-logo { width: 60px; height: 60px; object-fit: contain; }
 
-        /* العنوان الرئيسي (الدائرة 2) */
-        .report-title { border: 2px solid #000; padding: 8px; margin: 10px auto; width: 90%; text-align: center; font-weight: bold; font-size: 18pt; background: #f2f2f2; }
-        .coord-txt { text-align: right; font-weight: bold; font-size: 15pt; margin-bottom: 8px; text-decoration: underline; }
+        .report-title { border: 2px solid #000; padding: 4px; margin: 5px auto; width: 98%; text-align: center; font-weight: bold; font-size: 13pt; background: #f2f2f2; }
+        .coord-txt { text-align: right; font-weight: bold; font-size: 12pt; margin-bottom: 3px; text-decoration: underline; }
 
-        table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
-        th, td { border: 1.5px solid #000; padding: 6px; text-align: center; color: black; font-weight: bold; }
-        th { background: #eee; font-size: 13pt; }
-        td { font-size: 12pt; }
-        .weekend-bg { background: #f0f0f0 !important; }
+        table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 3px 2px; text-align: center; color: black; font-weight: bold; line-height: 1.1; }
+        th { background: #e0e0e0; font-size: 10.5pt; }
+        td { font-size: 10pt; }
+        
+        .weekend-bg { background-color: #f2f2f2 !important; }
 
-        .footer-area { margin-top: auto; padding: 30px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 14pt; }
+        /* تعديل التوقيعات لرفعها للأعلى (الصورة 2) */
+        .footer-area { margin-top: 15px; padding: 0 0 10px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 11pt; }
 
         @media print {
-            body { background: white; }
+            body { background: white; margin: 0; padding: 0; }
             .no-print { display: none !important; }
-            .a4-page { display: flex !important; border: none; box-shadow: none; margin: 0; width: 100%; height: 100%; }
+            .a4-page { 
+                display: flex !important; 
+                border: none; 
+                box-shadow: none; 
+                margin: 0; 
+                width: 210mm; 
+                height: 297mm; 
+                padding: 2mm 10mm;
+                page-break-after: avoid;
+            }
             @page { size: A4; margin: 0; }
+            .weekend-bg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
-<body>
+<body onload="populateDropdowns()">
 
     <div id="loginPage">
         <div class="login-card">
@@ -130,25 +119,11 @@
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
                     <div class="field">
                         <label>اختيار المنسق:</label>
-                        <select id="inCoord">
-                            <option value="بن رقية شيراز">بن رقية شيراز</option>
-                            <option value="عريج حورية">عريج حورية</option>
-                            <option value="براهمي امين">براهمي امين</option>
-                            <option value="زحالي خيرة">زحالي خيرة</option>
-                            <option value="بن عمار رانيا">بن عمار رانيا</option>
-                            <option value="براهمي كهينة">براهمي كهينة</option>
-                            <option value="عبدي اسيا">عبدي اسيا</option>
-                            <option value="بن وحليمة راضية">بن وحليمة راضية</option>
-                            <option value="ايماموين حميد">ايماموين حميد</option>
-                            <option value="عيدار عبد الحكيم">عيدار عبد الحكيم</option>
-                        </select>
+                        <select id="inCoord"></select>
                     </div>
                     <div class="field">
                         <label>موظف في عطلة:</label>
-                        <select id="inVacStaff">
-                            <option value="">-- لا يوجد --</option>
-                            <option value="ايماموين حميد">ايماموين حميد</option>
-                        </select>
+                        <select id="inVacStaff"></select>
                     </div>
                     <div class="field"><label>بداية العطلة:</label><input type="date" id="inVacS"></div>
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
@@ -161,7 +136,7 @@
         </div>
 
         <div id="toolbar" class="top-toolbar no-print" style="display:none">
-            <button style="background:#f8f9fa" onclick="goBack()">العودة للإعدادات</button>
+            <button style="background:#faf8f9" onclick="goBack()">العودة للإعدادات</button>
             <button style="background:#28a745; color:white" onclick="window.print()">إرسال إلى الطابعة</button>
         </div>
 
@@ -176,11 +151,18 @@
                     وحدة التخدير والإنعاش<br>
                     الرقم: <span id="outRefNum">.......</span> / <span id="outYear">2026</span>
                 </div>
-                <div class="center-box"><img src="logo.png" class="main-logo"></div>
-                <div class="side-box" style="text-align: left; padding-top: 50px;">قوراية في: .........................</div>
+                
+                <div class="center-box">
+                    <img src="logo.png" class="main-logo">
+                </div>
+                
+                <div class="side-box" style="text-align: left;">
+                    مصلحة الاستعجالات الطبية الجراحية<br>
+                    قوراية في: .........................
+                </div>
             </div>
 
-            <div class="report-title" id="outTitle">جدول مداومة الأعوان الطبيين</div>
+            <div class="report-title">جدول مداومة الأعوان الطبيين في التخدير والإنعاش لشهر <span id="outMonthName">...</span> <span id="outYearTitle">2026</span></div>
             <div class="coord-txt">السيدة <span id="outCoord">...</span> : منسق</div>
 
             <table>
@@ -188,15 +170,15 @@
                     <tr>
                         <th style="width:18%">التاريخ</th>
                         <th style="width:14%">اليوم</th>
-                        <th>القاعة A</th>
-                        <th>القاعة B</th>
-                        <th>القاعة C (الليل)</th>
+                        <th style="width:22%">القاعة A</th>
+                        <th style="width:22%">القاعة B</th>
+                        <th style="width:24%">القاعة C (الليل)</th>
                     </tr>
                 </thead>
                 <tbody id="outBody"></tbody>
             </table>
 
-            <div id="outVacNote" style="margin-top:10px; font-weight:bold; text-align:right; font-size:13pt;"></div>
+            <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt; color: black;"></div>
 
             <div class="footer-area">
                 <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
@@ -207,7 +189,17 @@
     </div>
 
     <script>
-        const personnel = ["عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "ايماموين حميد", "بن وحليمة راضية", "عيدار عبد الحكيم"];
+        const personnel = ["بن رقية شيراز", "عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "بن وحليمة راضية", "ايماموين حميد", "عيدار عبد الحكيم"];
+
+        function populateDropdowns() {
+            const coordSelect = document.getElementById('inCoord');
+            const vacSelect = document.getElementById('inVacStaff');
+            vacSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
+            personnel.forEach(name => {
+                coordSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                vacSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
 
         function checkLogin() {
             const user = document.getElementById('userInput').value;
@@ -221,19 +213,45 @@
             }
         }
 
+        function getAvailableStaff(personnelList, baseIndex, offset, currentDate, vacName, vacStart, vacEnd) {
+            let n = personnelList.length;
+            let attempt = 0;
+            while (attempt < n) {
+                let targetIdx = ((baseIndex + offset + attempt) % n + n) % n;
+                let candidate = personnelList[targetIdx];
+                let inVacation = false;
+                if (vacName && candidate === vacName && vacStart && vacEnd) {
+                    let d = new Date(currentDate); d.setHours(0,0,0,0);
+                    if (d >= vacStart && d <= vacEnd) inVacation = true;
+                }
+                if (!inVacation) return candidate;
+                attempt++;
+            }
+            return "---";
+        }
+
         function generate() {
             const dateVal = document.getElementById('inFullDate').value;
             if(!dateVal) return alert("اختر التاريخ");
-            
+            const vacName = document.getElementById('inVacStaff').value;
+            const vacSVal = document.getElementById('inVacS').value;
+            const vacEVal = document.getElementById('inVacE').value;
+            let vacStart = vacSVal ? new Date(vacSVal) : null;
+            let vacEnd = vacEVal ? new Date(vacEVal) : null;
+            if(vacStart) vacStart.setHours(0,0,0,0);
+            if(vacEnd) vacEnd.setHours(0,0,0,0);
+
             const date = new Date(dateVal);
             const selectedYear = date.getFullYear();
             
+            // تحديث العناصر الخاصة بالعنوان الجديد (الصورة 1)
+            const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            document.getElementById('outMonthName').innerText = months[date.getMonth()];
+            document.getElementById('outYearTitle').innerText = selectedYear;
+
             document.getElementById('outYear').innerText = selectedYear;
             document.getElementById('outRefNum').innerText = document.getElementById('inRef').value || ".......";
             document.getElementById('outCoord').innerText = document.getElementById('inCoord').value;
-            
-            const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-            document.getElementById('outTitle').innerText = `جدول مداومة الأعوان الطبيين لشهر ${months[date.getMonth()]} ${selectedYear}`;
             
             const tbody = document.getElementById('outBody');
             tbody.innerHTML = "";
@@ -245,18 +263,24 @@
                 let dName = current.toLocaleDateString('ar-DZ', {weekday: 'long'});
                 let isW = (dName === 'الجمعة' || dName === 'السبت');
                 let diff = Math.floor((current - refDate)/(1000*60*60*24));
-                let n = personnel.length;
-                let idx = ((diff % n) + n) % n;
+                let staffC = getAvailableStaff(personnel, diff, 0, current, vacName, vacStart, vacEnd);
+                let staffA = getAvailableStaff(personnel, diff, 4, current, vacName, vacStart, vacEnd);
+                let staffB = isW ? "" : getAvailableStaff(personnel, diff, 7, current, vacName, vacStart, vacEnd);
 
                 tbody.innerHTML += `<tr class="${isW ? 'weekend-bg' : ''}">
                     <td>${current.toLocaleDateString('en-GB')}</td>
                     <td>${dName}</td>
-                    <td>${personnel[(idx + 4) % n]}</td>
-                    <td>${isW ? "" : personnel[(idx + 7) % n]}</td>
-                    <td>${personnel[idx]}</td>
+                    <td>${staffA}</td>
+                    <td>${staffB}</td>
+                    <td>${staffC}</td>
                 </tr>`;
                 current.setDate(current.getDate() + 1);
             }
+
+            const noteArea = document.getElementById('outVacNote');
+            if(vacName && vacSVal && vacEVal) {
+                noteArea.innerText = `ملاحظة: السيد(ة) ${vacName} في عطلة سنوية من ${new Date(vacSVal).toLocaleDateString('en-GB')} إلى ${new Date(vacEVal).toLocaleDateString('en-GB')}`;
+            } else { noteArea.innerText = ""; }
 
             document.getElementById('setupOverlay').style.display = 'none';
             document.getElementById('toolbar').style.display = 'block';
