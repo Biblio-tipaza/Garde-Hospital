@@ -3,15 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مداومة مستشفى قوراية - النسخة النهائية</title>
+    <title>نظام مداومة مستشفى قوراية</title>
     <style>
-        /* الخطوط العامة */
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; background-color: #d1e9ff; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
 
-        /* --- واجهة تسجيل الدخول --- */
-        #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { background-color: #005f6b; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 380px; text-align: center; border: 2px solid #ffffff; }
+        /* واجهة تسجيل الدخول */
+        #loginPage { 
+            height: 100vh; display: flex; justify-content: center; align-items: center; 
+            background-color: #005f6b;
+            background-image: url('poto.jpg'); 
+            background-size: cover; background-position: center;
+        }
+
+        /* واجهة النظام الرئيسية */
+        #mainSystem { 
+            display: none; height: 100vh; 
+            background-color: #d1e9ff;
+            background-image: url('pict.jpg'); 
+            background-size: cover; background-position: center;
+        }
+
+        .login-card { 
+            background-color: rgba(0, 95, 107, 0.9); 
+            padding: 2.5rem; border-radius: 20px; width: 380px; text-align: center; border: 2px solid #ffffff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        .config-window { 
+            background: rgba(255, 255, 255, 0.95); 
+            width: 850px; padding: 25px; border-radius: 15px; border: 3px solid #1976d2; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+
         .logo-container { background-color: white; width: 100px; height: 100px; margin: 0 auto 1.5rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .logo-container img { max-width: 80px; height: auto; }
         .login-card h2, .login-card label { color: #ffffff; }
@@ -20,86 +44,41 @@
         .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: none; background-color: #f8f9fa; }
         .btn-login { width: 100%; padding: 12px; background-color: #ffffff; color: #005f6b; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; }
         #error-msg { color: #ffcdd2; font-size: 14px; margin-top: 10px; display: none; }
-
-        /* --- واجهة النظام الرئيسية --- */
-        #mainSystem { display: none; }
         .setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .config-window { background: white; width: 850px; padding: 30px; border-radius: 15px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); border: 3px solid #1976d2; }
-        .config-title-box { border: 2px solid #d32f2f; padding: 10px; text-align: center; margin-bottom: 25px; background-color: #fff5f5; }
-        .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 24px; }
+        .config-title-box { border: 2px solid #d32f2f; padding: 10px; text-align: center; margin-bottom: 20px; background-color: #fff5f5; }
+        .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 22px; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .field { display: flex; flex-direction: column; text-align: right; }
         .field label { font-weight: bold; margin-bottom: 5px; color: #333; }
-        
-        /* تنسيق التاريخ jj/mm/aaaa */
-        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; font-family: sans-serif; }
-        input[type="date"] { direction: ltr; text-align: right; }
-
-        .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 15px; }
-        .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
-        .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 22px; font-weight: bold; cursor: pointer; }
-
+        .field input, .field select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; font-family: sans-serif; }
+        .admin-controls { grid-column: span 2; display: flex; gap: 10px; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-add { flex: 1; padding: 10px; background: #00897b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-remove { flex: 1; padding: 10px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 10px; }
+        .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; }
         .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 500; }
         .top-toolbar button { padding: 8px 25px; margin: 0 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
-
-        /* --- تنسيق الورقة A4 للطباعة --- */
-        .a4-page { 
-            width: 210mm; 
-            height: 297mm; 
-            padding: 15mm 10mm 5mm 10mm; 
-            margin: 10px auto;
-            background: white; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            display: none; 
-            flex-direction: column; 
-            overflow: hidden;
-            font-family: 'Times New Roman', Times, serif; 
-        }
-
+        .a4-page { width: 210mm; height: 297mm; padding: 15mm 10mm 5mm 10mm; margin: 10px auto; background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; font-family: 'Times New Roman', Times, serif; }
         .header-top { text-align: center; font-weight: bold; font-size: 12pt; text-decoration: underline; margin-bottom: 2px; }
         .header-ministry { text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 8px; }
-        
         .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
         .side-box { width: 45%; font-size: 11pt; font-weight: bold; line-height: 1.4; }
-        .center-box { width: 10%; text-align: center; }
-        
         .main-logo { width: 85px; height: 85px; object-fit: contain; }
-
         .report-title { border: 2.5px solid #000; padding: 6px; margin: 5px auto; width: 98%; text-align: center; font-weight: bold; font-size: 13pt; background: #f2f2f2; }
         .coord-txt { text-align: right; font-weight: bold; font-size: 12pt; margin-bottom: 5px; text-decoration: underline; }
-
         table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
         th, td { border: 1.5px solid #000; padding: 3px 2px; text-align: center; color: black; font-weight: bold; line-height: 1.1; }
         th { background: #e0e0e0; font-size: 10.5pt; }
         td { font-size: 10pt; }
-        
         .weekend-bg { background-color: #f2f2f2 !important; }
-
-        /* --- تعديل منطقة التوقيعات لرفعها للأعلى --- */
-        .footer-area { 
-            margin-top: 15px; /* مسافة بسيطة تحت الجدول */
-            padding: 0; 
-            display: flex; 
-            justify-content: space-between; 
-            font-weight: bold; 
-            font-size: 11pt; 
-        }
+        .footer-area { margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 11pt; }
 
         @media print {
             body { background: white; margin: 0; padding: 0; }
             .no-print { display: none !important; }
-            .a4-page { 
-                display: flex !important; 
-                border: none; 
-                box-shadow: none; 
-                margin: 0; 
-                width: 210mm; 
-                height: 297mm; 
-                padding: 15mm 10mm 5mm 10mm; 
-                page-break-after: avoid;
-            }
+            .a4-page { display: flex !important; border: none; box-shadow: none; margin: 0; width: 210mm; height: 297mm; padding: 15mm 10mm 5mm 10mm; }
             @page { size: A4; margin: 0; }
-            .weekend-bg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -107,17 +86,17 @@
 
     <div id="loginPage">
         <div class="login-card">
-            <div class="logo-container"><img src="logo.png" alt="logo"></div>
+            <div class="logo-container"><img src="logo.png" alt="logo" onerror="this.style.display='none'"></div>
             <h2>الدخول للنظام</h2>
             <div class="input-group">
                 <label>اسم المستخدم:</label>
-                <input type="text" id="userInput" placeholder="Admin">
+                <input type="text" id="userInput" value="Admin">
             </div>
             <div class="input-group">
                 <label>كلمة المرور:</label>
                 <input type="password" id="passInput" placeholder="••••••••">
             </div>
-            <p id="error-msg">خطأ في اسم المستخدم أو كلمة المرور!</p>
+            <p id="error-msg">خطأ في كلمة المرور!</p>
             <button class="btn-login" onclick="checkLogin()">تسجيل الدخول</button>
         </div>
     </div>
@@ -127,12 +106,18 @@
             <div class="config-window">
                 <div class="config-title-box"><h2>إعدادات جدول المداومة</h2></div>
                 <div class="input-grid">
-                    <div class="field"><label>تاريخ بداية الجدول (jj/mm/aaaa):</label><input type="date" id="inFullDate" value="2026-04-01"></div>
+                    <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
                     <div class="field"><label>اختيار المنسق:</label><select id="inCoord"></select></div>
                     <div class="field"><label>موظف في عطلة:</label><select id="inVacStaff"></select></div>
                     <div class="field"><label>بداية العطلة:</label><input type="date" id="inVacS"></div>
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
+                    
+                    <div class="admin-controls">
+                        <button class="btn-add" onclick="addNewStaff()">+ إضافة موظف جديد</button>
+                        <button class="btn-remove" onclick="removeStaff()">- حذف موظف</button>
+                    </div>
+
                     <div class="actions-row">
                         <button class="btn-generate" onclick="generate()">توليد الجدول للطباعة</button>
                         <button class="btn-exit" onclick="location.reload()">خروج</button>
@@ -142,14 +127,13 @@
         </div>
 
         <div id="toolbar" class="top-toolbar no-print" style="display:none">
-            <button style="background:#faf8f9" onclick="goBack()">العودة للإعدادات</button>
+            <button onclick="goBack()">العودة للإعدادات</button>
             <button style="background:#28a745; color:white" onclick="window.print()">إرسال إلى الطابعة</button>
         </div>
 
         <div id="paperA4" class="a4-page">
             <div class="header-top">الجمهورية الجزائرية الديمقراطية الشعبية</div>
             <div class="header-ministry">وزارة الصحة</div>
-            
             <div class="header-layout">
                 <div class="side-box" style="text-align: right;">
                     مديرية الصحة والسكان لولاية تيبازة<br>
@@ -157,20 +141,14 @@
                     وحدة التخدير والإنعاش<br>
                     الرقم: <span id="outRefNum">.......</span> / <span id="outYear">2026</span>
                 </div>
-                
-                <div class="center-box">
-                    <img src="logo.png" class="main-logo">
-                </div>
-                
+                <div class="center-box"><img src="logo.png" class="main-logo" onerror="this.style.display='none'"></div>
                 <div class="side-box" style="text-align: left;">
                     مصلحة الاستعجالات الطبية الجراحية<br>
                     قوراية في: .........................
                 </div>
             </div>
-
             <div class="report-title">جدول مداومة الأعوان الطبيين في التخدير والإنعاش لشهر <span id="outMonthName">...</span> <span id="outYearTitle">2026</span></div>
             <div class="coord-txt">السيدة <span id="outCoord">...</span> : منسق</div>
-
             <table>
                 <thead>
                     <tr>
@@ -183,9 +161,7 @@
                 </thead>
                 <tbody id="outBody"></tbody>
             </table>
-
             <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt;"></div>
-
             <div class="footer-area">
                 <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
                 <div style="text-align:center">رئيسة وحدة التخدير<br>والإنعاش</div>
@@ -195,106 +171,110 @@
     </div>
 
     <script>
-        const personnel = ["بن رقية شيراز", "عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "بن وحليمة راضية", "ايماموين حميد", "عيدار عبد الحكيم"];
+        // مصفوفة الموظفين - جعلت "بن رقية شيراز" في المقدمة
+        let personnel = ["بن رقية شيراز", "عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "بن وحليمة راضية", "ايماموين حميد", "عيدار عبد الحكيم"];
 
         function populateDropdowns() {
-            const coordSelect = document.getElementById('inCoord');
-            const vacSelect = document.getElementById('inVacStaff');
-            vacSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
-            personnel.forEach(name => {
-                coordSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                vacSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            const cs = document.getElementById('inCoord');
+            const vs = document.getElementById('inVacStaff');
+            cs.innerHTML = "";
+            vs.innerHTML = '<option value="">-- لا يوجد --</option>';
+            
+            // إضافة الأسماء بالترتيب الموجود في المصفوفة (بدون ترتيب أبجدي)
+            personnel.forEach(n => {
+                cs.innerHTML += `<option value="${n}">${n}</option>`;
+                vs.innerHTML += `<option value="${n}">${n}</option>`;
             });
         }
 
         function checkLogin() {
-            const user = document.getElementById('userInput').value;
-            const pass = document.getElementById('passInput').value;
-            if (user === "Admin" && pass === "Azerty@2026") {
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('mainSystem').style.display = 'block';
-                document.body.style.backgroundColor = "#e3f2fd";
+            if(document.getElementById('passInput').value === "Azerty@2026") {
+                document.getElementById('loginPage').style.display='none';
+                document.getElementById('mainSystem').style.display='block';
             } else {
-                document.getElementById('error-msg').style.display = "block";
+                document.getElementById('error-msg').style.display='block';
             }
         }
 
-        function getAvailableStaff(personnelList, baseIndex, offset, currentDate, vacName, vacStart, vacEnd) {
-            let n = personnelList.length;
-            let attempt = 0;
-            while (attempt < n) {
-                let targetIdx = ((baseIndex + offset + attempt) % n + n) % n;
-                let candidate = personnelList[targetIdx];
-                let inVacation = false;
-                if (vacName && candidate === vacName && vacStart && vacEnd) {
-                    let d = new Date(currentDate); d.setHours(0,0,0,0);
-                    if (d >= vacStart && d <= vacEnd) inVacation = true;
+        function addNewStaff() {
+            let n = prompt("الاسم الكامل للموظف:");
+            if(n && !personnel.includes(n)) {
+                personnel.push(n);
+                populateDropdowns();
+            }
+        }
+
+        function removeStaff() {
+            let v = document.getElementById('inVacStaff').value;
+            if(v && confirm("هل أنت متأكد من حذف الموظف؟")) {
+                personnel = personnel.filter(p => p !== v);
+                populateDropdowns();
+            }
+        }
+
+        function getStaff(list, base, off, date, vac, vS, vE) {
+            let n = list.length;
+            for(let i=0; i<n; i++) {
+                let cand = list[((base+off+i)%n+n)%n];
+                let inV = false;
+                if(vac && cand === vac && vS && vE) {
+                    let d = new Date(date); d.setHours(0,0,0,0);
+                    if(d >= vS && d <= vE) inV = true;
                 }
-                if (!inVacation) return candidate;
-                attempt++;
+                if(!inV) return cand;
             }
             return "---";
         }
 
         function generate() {
-            const dateVal = document.getElementById('inFullDate').value;
-            if(!dateVal) return alert("اختر التاريخ");
-            const vacName = document.getElementById('inVacStaff').value;
-            const vacSVal = document.getElementById('inVacS').value;
-            const vacEVal = document.getElementById('inVacE').value;
-            let vacStart = vacSVal ? new Date(vacSVal) : null;
-            let vacEnd = vacEVal ? new Date(vacEVal) : null;
-            if(vacStart) vacStart.setHours(0,0,0,0);
-            if(vacEnd) vacEnd.setHours(0,0,0,0);
+            const dVal = document.getElementById('inFullDate').value; if(!dVal) return;
+            const coord = document.getElementById('inCoord').value;
+            const vac = document.getElementById('inVacStaff').value;
+            const vS = document.getElementById('inVacS').value ? new Date(document.getElementById('inVacS').value) : null;
+            const vE = document.getElementById('inVacE').value ? new Date(document.getElementById('inVacE').value) : null;
+            if(vS) vS.setHours(0,0,0,0); if(vE) vE.setHours(0,0,0,0);
 
-            const date = new Date(dateVal);
-            const selectedYear = date.getFullYear();
+            const active = personnel.filter(p => p !== coord);
+            const date = new Date(dVal);
             const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
             
             document.getElementById('outMonthName').innerText = months[date.getMonth()];
-            document.getElementById('outYearTitle').innerText = selectedYear;
-            document.getElementById('outYear').innerText = selectedYear;
+            document.getElementById('outYearTitle').innerText = date.getFullYear();
+            document.getElementById('outYear').innerText = date.getFullYear();
             document.getElementById('outRefNum').innerText = document.getElementById('inRef').value || ".......";
-            document.getElementById('outCoord').innerText = document.getElementById('inCoord').value;
-            
-            const tbody = document.getElementById('outBody');
-            tbody.innerHTML = "";
-            let current = new Date(date);
-            let currentMonth = date.getMonth();
-            const refDate = new Date(selectedYear + "-01-01");
+            document.getElementById('outCoord').innerText = coord;
 
-            while(current.getMonth() === currentMonth) {
-                let dName = current.toLocaleDateString('ar-DZ', {weekday: 'long'});
-                let isW = (dName === 'الجمعة' || dName === 'السبت');
-                let diff = Math.floor((current - refDate)/(1000*60*60*24));
-                let staffC = getAvailableStaff(personnel, diff, 0, current, vacName, vacStart, vacEnd);
-                let staffA = getAvailableStaff(personnel, diff, 4, current, vacName, vacStart, vacEnd);
-                let staffB = isW ? "" : getAvailableStaff(personnel, diff, 7, current, vacName, vacStart, vacEnd);
+            const tbody = document.getElementById('outBody'); tbody.innerHTML = "";
+            let curr = new Date(date); let m = date.getMonth();
+            const ref = new Date(date.getFullYear(), 0, 1);
 
-                tbody.innerHTML += `<tr class="${isW ? 'weekend-bg' : ''}">
-                    <td>${current.toLocaleDateString('en-GB')}</td>
-                    <td>${dName}</td>
-                    <td>${staffA}</td>
-                    <td>${staffB}</td>
-                    <td>${staffC}</td>
+            while(curr.getMonth() === m) {
+                let day = curr.toLocaleDateString('ar-DZ', {weekday: 'long'});
+                let isW = (day === 'الجمعة' || day === 'السبت');
+                let diff = Math.floor((curr - ref)/(86400000));
+                
+                tbody.innerHTML += `<tr class="${isW?'weekend-bg':''}">
+                    <td>${curr.toLocaleDateString('en-GB')}</td>
+                    <td>${day}</td>
+                    <td>${getStaff(active,diff,3,curr,vac,vS,vE)}</td>
+                    <td>${isW?'':getStaff(active,diff,6,curr,vac,vS,vE)}</td>
+                    <td>${getStaff(active,diff,0,curr,vac,vS,vE)}</td>
                 </tr>`;
-                current.setDate(current.getDate() + 1);
+                curr.setDate(curr.getDate()+1);
             }
-
+            
             const noteArea = document.getElementById('outVacNote');
-            if(vacName && vacSVal && vacEVal) {
-                noteArea.innerText = `ملاحظة: السيد(ة) ${vacName} في عطلة سنوية من ${new Date(vacSVal).toLocaleDateString('en-GB')} إلى ${new Date(vacEVal).toLocaleDateString('en-GB')}`;
-            } else { noteArea.innerText = ""; }
+            noteArea.innerText = (vac && vS && vE) ? `ملاحظة: السيد(ة) ${vac} في عطلة سنوية من ${vS.toLocaleDateString('en-GB')} إلى ${vE.toLocaleDateString('en-GB')}` : "";
 
-            document.getElementById('setupOverlay').style.display = 'none';
-            document.getElementById('toolbar').style.display = 'block';
-            document.getElementById('paperA4').style.display = 'flex';
+            document.getElementById('setupOverlay').style.display='none';
+            document.getElementById('toolbar').style.display='block';
+            document.getElementById('paperA4').style.display='flex';
         }
 
         function goBack() {
-            document.getElementById('setupOverlay').style.display = 'flex';
-            document.getElementById('toolbar').style.display = 'none';
-            document.getElementById('paperA4').style.display = 'none';
+            document.getElementById('setupOverlay').style.display='flex';
+            document.getElementById('toolbar').style.display='none';
+            document.getElementById('paperA4').style.display='none';
         }
     </script>
 </body>
