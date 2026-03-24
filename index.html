@@ -2,11 +2,11 @@
 <html lang="fr" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>نظام مداومة مستشفى قوراية</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f5; }
 
         /* واجهة تسجيل الدخول */
         #loginPage { 
@@ -16,69 +16,81 @@
             background-size: cover; background-position: center;
         }
 
-        /* واجهة النظام الرئيسية */
         #mainSystem { 
-            display: none; height: 100vh; 
+            display: none; min-height: 100vh; 
             background-color: #d1e9ff;
             background-image: url('pict.jpg'); 
             background-size: cover; background-position: center;
+            background-attachment: fixed;
         }
 
         .login-card { 
             background-color: rgba(0, 95, 107, 0.9); 
-            padding: 2.5rem; border-radius: 20px; width: 380px; text-align: center; border: 2px solid #ffffff; 
+            padding: 2rem; border-radius: 20px; width: 380px; max-width: 90%; text-align: center; border: 2px solid #ffffff; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         
         .config-window { 
             background: rgba(255, 255, 255, 0.95); 
-            width: 850px; padding: 25px; border-radius: 15px; border: 3px solid #1976d2; 
+            width: 850px; max-width: 95%; padding: 20px; border-radius: 15px; border: 3px solid #1976d2; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            margin: 20px auto;
         }
 
-        .logo-container { background-color: white; width: 100px; height: 100px; margin: 0 auto 1.5rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .logo-container img { max-width: 80px; height: auto; }
-        .login-card h2, .login-card label { color: #ffffff; }
-        .input-group { text-align: right; margin-bottom: 1.5rem; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: none; background-color: #f8f9fa; }
-        .btn-login { width: 100%; padding: 12px; background-color: #ffffff; color: #005f6b; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .logo-container { background-color: white; width: 90px; height: 90px; margin: 0 auto 1rem auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;}
+        .logo-container img { width: 100%; height: auto; object-fit: cover; }
+        .login-card h2 { color: #ffffff; margin-bottom: 1.5rem; }
+        
+        .input-group { text-align: right; margin-bottom: 1.2rem; }
+        .input-group label { display: block; margin-bottom: 5px; color: white; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 16px; }
+        
+        .btn-login { width: 100%; padding: 12px; background-color: #ffffff; color: #005f6b; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        
         #error-msg { color: #ffcdd2; font-size: 14px; margin-top: 10px; display: none; }
-        .setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .config-title-box { border: 2px solid #d32f2f; padding: 10px; text-align: center; margin-bottom: 20px; background-color: #fff5f5; }
-        .config-title-box h2 { margin: 0; color: #d32f2f; font-size: 22px; }
+
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .field { display: flex; flex-direction: column; text-align: right; }
         .field label { font-weight: bold; margin-bottom: 5px; color: #333; }
-        .field input, .field select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; font-family: sans-serif; }
-        .admin-controls { grid-column: span 2; display: flex; gap: 10px; margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .btn-add { flex: 1; padding: 10px; background: #00897b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-remove { flex: 1; padding: 10px; background: #7e57c2; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .actions-row { grid-column: span 2; display: flex; gap: 15px; margin-top: 10px; }
-        .btn-generate { flex: 3; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 500; }
-        .top-toolbar button { padding: 8px 25px; margin: 0 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
-        .a4-page { width: 210mm; height: 297mm; padding: 15mm 10mm 5mm 10mm; margin: 10px auto; background: white; box-shadow: 0 0 15px rgba(0,0,0,0.2); display: none; flex-direction: column; overflow: hidden; font-family: 'Times New Roman', Times, serif; }
-        .header-top { text-align: center; font-weight: bold; font-size: 12pt; text-decoration: underline; margin-bottom: 2px; }
-        .header-ministry { text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 8px; }
-        .header-layout { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
-        .side-box { width: 45%; font-size: 11pt; font-weight: bold; line-height: 1.4; }
-        .main-logo { width: 85px; height: 85px; object-fit: contain; }
-        .report-title { border: 2.5px solid #000; padding: 6px; margin: 5px auto; width: 98%; text-align: center; font-weight: bold; font-size: 13pt; background: #f2f2f2; }
-        .coord-txt { text-align: right; font-weight: bold; font-size: 12pt; margin-bottom: 5px; text-decoration: underline; }
-        table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
-        th, td { border: 1.5px solid #000; padding: 3px 2px; text-align: center; color: black; font-weight: bold; line-height: 1.1; }
-        th { background: #e0e0e0; font-size: 10.5pt; }
-        td { font-size: 10pt; }
-        .weekend-bg { background-color: #f2f2f2 !important; }
-        .footer-area { margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 11pt; }
+        .field input, .field select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+
+        .admin-controls { grid-column: 1 / -1; display: flex; gap: 10px; margin: 15px 0; border-top: 1px solid #ddd; padding-top: 15px; align-items: flex-end; }
+        .btn-add { flex: 1; padding: 12px; background: #00897b; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; height: 45px; }
+        .btn-remove { flex: 1; padding: 12px; background: #7e57c2; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; height: 45px; }
+        .select-remove { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; height: 45px; background: white; }
+        
+        .actions-row { grid-column: 1 / -1; display: flex; gap: 10px; }
+        .btn-generate { flex: 2; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-exit { flex: 1; padding: 15px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        .top-toolbar { background: #333; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .top-toolbar button { padding: 10px 20px; margin: 5px; cursor: pointer; font-weight: bold; border-radius: 5px; border: none; }
+
+        .a4-container { width: 100%; overflow-x: auto; padding: 10px; }
+        .a4-page { width: 210mm; height: 297mm; padding: 5mm 10mm 40mm 10mm; margin: 0 auto; background: white; display: none; flex-direction: column; font-family: 'Times New Roman', serif; color: black; overflow: hidden; }
+        .header-layout { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .side-box { width: 45%; font-size: 10pt; font-weight: bold; line-height: 1.2; }
+        .main-logo { width: 65px; height: auto; }
+        .report-title { border: 2px solid black; padding: 5px; text-align: center; font-weight: bold; font-size: 13pt; background: #eee; margin: 8px 0; }
+        
+        table { width: 100%; border-collapse: collapse; border: 2px solid black; table-layout: fixed; }
+        th, td { border: 1px solid black; padding: 3px 2px; text-align: center; font-weight: bold; font-size: 9.5pt; overflow: hidden; height: 21px;}
+        th { background: #ddd; }
+        
+        /* اللون الرمادي المطلوب من الصورة */
+        .weekend-bg { background-color: #b0b0b0 !important; }
+
+        .signatures-section { margin-top: auto; padding-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; text-align: center; font-size: 11pt; }
 
         @media print {
-            body { background: white; margin: 0; padding: 0; }
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white; }
             .no-print { display: none !important; }
-            .a4-page { display: flex !important; border: none; box-shadow: none; margin: 0; width: 210mm; height: 297mm; padding: 15mm 10mm 5mm 10mm; }
-            @page { size: A4; margin: 0; }
+            .a4-page { display: flex !important; width: 210mm; height: 297mm; margin: 0; border: none; box-shadow: none; }
+            .a4-container { overflow: visible; padding: 0; }
+            table { page-break-inside: avoid; }
+            /* لضمان ظهور اللون الرمادي عند الطباعة */
+            .weekend-bg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -86,7 +98,7 @@
 
     <div id="loginPage">
         <div class="login-card">
-            <div class="logo-container"><img src="logo.png" alt="logo" onerror="this.style.display='none'"></div>
+            <div class="logo-container"><img src="logo_gouraya.png" alt="logo" onerror="this.src='logo.png'"></div>
             <h2>الدخول للنظام</h2>
             <div class="input-group">
                 <label>اسم المستخدم:</label>
@@ -96,15 +108,15 @@
                 <label>كلمة المرور:</label>
                 <input type="password" id="passInput" placeholder="••••••••">
             </div>
-            <p id="error-msg">خطأ في كلمة المرور!</p>
+            <p id="error-msg">كلمة المرور غير صحيحة!</p>
             <button class="btn-login" onclick="checkLogin()">تسجيل الدخول</button>
         </div>
     </div>
 
     <div id="mainSystem">
-        <div id="setupOverlay" class="setup-overlay no-print">
+        <div id="setupOverlay" class="no-print">
             <div class="config-window">
-                <div class="config-title-box"><h2>إعدادات جدول المداومة</h2></div>
+                <div class="config-title-box"><h2 style="text-align:center; color:#d32f2f;">إعدادات جدول المداومة</h2></div>
                 <div class="input-grid">
                     <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
@@ -115,7 +127,8 @@
                     
                     <div class="admin-controls">
                         <button class="btn-add" onclick="addNewStaff()">+ إضافة موظف جديد</button>
-                        <button class="btn-remove" onclick="removeStaff()">- حذف موظف</button>
+                        <select id="deleteStaffSelect" class="select-remove"></select>
+                        <button class="btn-remove" onclick="removeStaff()">- حذف موظف مختار</button>
                     </div>
 
                     <div class="actions-row">
@@ -127,63 +140,73 @@
         </div>
 
         <div id="toolbar" class="top-toolbar no-print" style="display:none">
-            <button onclick="goBack()">العودة للإعدادات</button>
-            <button style="background:#28a745; color:white" onclick="window.print()">إرسال إلى الطابعة</button>
+            <button onclick="goBack()">تعديل البيانات</button>
+            <button style="background:#28a745; color:white" onclick="window.print()">طباعة الجدول</button>
         </div>
 
-        <div id="paperA4" class="a4-page">
-            <div class="header-top">الجمهورية الجزائرية الديمقراطية الشعبية</div>
-            <div class="header-ministry">وزارة الصحة</div>
-            <div class="header-layout">
-                <div class="side-box" style="text-align: right;">
-                    مديرية الصحة والسكان لولاية تيبازة<br>
-                    المؤسسة العمومية الاستشفائية بقوراية<br>
-                    وحدة التخدير والإنعاش<br>
-                    الرقم: <span id="outRefNum">.......</span> / <span id="outYear">2026</span>
+        <div class="a4-container">
+            <div id="paperA4" class="a4-page">
+                <div style="text-align:center; font-weight:bold; text-decoration:underline; font-size:12pt;">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+                <div style="text-align:center; font-weight:bold; margin-top:2px; font-size:11pt;">وزارة الصحة</div>
+                
+                <div class="header-layout">
+                    <div class="side-box" style="text-align:right;">
+                        مديرية الصحة والسكان لولاية تيبازة<br>
+                        المؤسسة العمومية الاستشفائية بقوراية<br>
+                        وحدة التخدير والإنعاش<br>
+                        الرقم: <span id="outRefNum">.......</span> / 2026
+                    </div>
+                    <div><img src="logo_gouraya.png" class="main-logo" onerror="this.src='logo.png'"></div>
+                    <div class="side-box" style="text-align:left;">
+                        مصلحة الاستعجالات الطبية الجراحية<br>
+                        قوراية في: .................
+                    </div>
                 </div>
-                <div class="center-box"><img src="logo.png" class="main-logo" onerror="this.style.display='none'"></div>
-                <div class="side-box" style="text-align: left;">
-                    مصلحة الاستعجالات الطبية الجراحية<br>
-                    قوراية في: .........................
+
+                <div class="report-title">جدول مداومة الأعوان الطبيين في التخدير والإنعاش لشهر <span id="outMonthName"></span> 2026</div>
+                <div style="text-align:right; font-weight:bold; margin-bottom:5px; font-size:11pt;">السيدة <span id="outCoord"></span> : منسق</div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:18%">التاريخ</th>
+                            <th style="width:14%">اليوم</th>
+                            <th style="width:22%">القاعة A</th>
+                            <th style="width:22%">القاعة B</th>
+                            <th style="width:24%">القاعة C (الليل)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outBody"></tbody>
+                </table>
+                
+                <div id="outVacNote" style="margin-top:8px; font-weight:bold; text-align:right; font-size:10pt; min-height: 1.2em;"></div>
+
+                <div class="signatures-section">
+                    <div>إطار وحدة التخدير<br>والإنعاش</div>
+                    <div>رئيسة وحدة التخدير<br>والإنعاش</div>
+                    <div>السيد المدير</div>
                 </div>
-            </div>
-            <div class="report-title">جدول مداومة الأعوان الطبيين في التخدير والإنعاش لشهر <span id="outMonthName">...</span> <span id="outYearTitle">2026</span></div>
-            <div class="coord-txt">السيدة <span id="outCoord">...</span> : منسق</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:18%">التاريخ</th>
-                        <th style="width:14%">اليوم</th>
-                        <th style="width:22%">القاعة A</th>
-                        <th style="width:22%">القاعة B</th>
-                        <th style="width:24%">القاعة C (الليل)</th>
-                    </tr>
-                </thead>
-                <tbody id="outBody"></tbody>
-            </table>
-            <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt;"></div>
-            <div class="footer-area">
-                <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
-                <div style="text-align:center">رئيسة وحدة التخدير<br>والإنعاش</div>
-                <div style="text-align:center">السيد المدير</div>
             </div>
         </div>
     </div>
 
     <script>
-        // مصفوفة الموظفين - جعلت "بن رقية شيراز" في المقدمة
-        let personnel = ["بن رقية شيراز", "عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "بن وحليمة راضية", "ايماموين حميد", "عيدار عبد الحكيم"];
+        let personnel = ["بن رقية شيراز", "براهمي امين", "براهمي كهينة", "عبدي اسيا", "بن عمار رانية", "زحالي خيرة", "ايماموين حميد", "عيدار حكيم", "بن وحليمة راضية", "عريج حورية"];
 
         function populateDropdowns() {
             const cs = document.getElementById('inCoord');
             const vs = document.getElementById('inVacStaff');
-            cs.innerHTML = "";
-            vs.innerHTML = '<option value="">-- لا يوجد --</option>';
+            const ds = document.getElementById('deleteStaffSelect');
             
-            // إضافة الأسماء بالترتيب الموجود في المصفوفة (بدون ترتيب أبجدي)
-            personnel.forEach(n => {
-                cs.innerHTML += `<option value="${n}">${n}</option>`;
-                vs.innerHTML += `<option value="${n}">${n}</option>`;
+            if(cs) cs.innerHTML = ""; 
+            if(vs) vs.innerHTML = '<option value="">-- لا يوجد --</option>';
+            if(ds) ds.innerHTML = '<option value="">-- اختر للحذف --</option>';
+
+            personnel.forEach((n, index) => {
+                let opt = `<option value="${n}">${n}</option>`;
+                if(cs) cs.innerHTML += opt;
+                if(vs) vs.innerHTML += opt;
+                if(ds) ds.innerHTML += opt;
             });
         }
 
@@ -191,29 +214,33 @@
             if(document.getElementById('passInput').value === "Azerty@2026") {
                 document.getElementById('loginPage').style.display='none';
                 document.getElementById('mainSystem').style.display='block';
+                populateDropdowns();
             } else {
                 document.getElementById('error-msg').style.display='block';
             }
         }
 
         function addNewStaff() {
-            let n = prompt("الاسم الكامل للموظف:");
-            if(n && !personnel.includes(n)) {
-                personnel.push(n);
-                populateDropdowns();
+            let n = prompt("الاسم الكامل للموظف الجديد:");
+            if(n && !personnel.includes(n)) { 
+                personnel.push(n); 
+                populateDropdowns(); 
             }
         }
 
         function removeStaff() {
-            let v = document.getElementById('inVacStaff').value;
-            if(v && confirm("هل أنت متأكد من حذف الموظف؟")) {
-                personnel = personnel.filter(p => p !== v);
-                populateDropdowns();
+            let v = document.getElementById('deleteStaffSelect').value;
+            if(!v || v === "") return alert("الرجاء اختيار اسم من القائمة لحذفه");
+            
+            if(confirm(`هل تريد حذف الموظف (${v}) نهائياً؟`)) { 
+                personnel = personnel.filter(p => p !== v); 
+                populateDropdowns(); 
             }
         }
 
         function getStaff(list, base, off, date, vac, vS, vE) {
             let n = list.length;
+            if (n === 0) return "---";
             for(let i=0; i<n; i++) {
                 let cand = list[((base+off+i)%n+n)%n];
                 let inV = false;
@@ -227,11 +254,15 @@
         }
 
         function generate() {
-            const dVal = document.getElementById('inFullDate').value; if(!dVal) return;
+            const dVal = document.getElementById('inFullDate').value; if(!dVal) return alert("الرجاء اختيار التاريخ");
             const coord = document.getElementById('inCoord').value;
             const vac = document.getElementById('inVacStaff').value;
-            const vS = document.getElementById('inVacS').value ? new Date(document.getElementById('inVacS').value) : null;
-            const vE = document.getElementById('inVacE').value ? new Date(document.getElementById('inVacE').value) : null;
+            const refNum = document.getElementById('inRef').value;
+            const vSInput = document.getElementById('inVacS').value;
+            const vEInput = document.getElementById('inVacE').value;
+            
+            const vS = vSInput ? new Date(vSInput) : null;
+            const vE = vEInput ? new Date(vEInput) : null;
             if(vS) vS.setHours(0,0,0,0); if(vE) vE.setHours(0,0,0,0);
 
             const active = personnel.filter(p => p !== coord);
@@ -239,10 +270,8 @@
             const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
             
             document.getElementById('outMonthName').innerText = months[date.getMonth()];
-            document.getElementById('outYearTitle').innerText = date.getFullYear();
-            document.getElementById('outYear').innerText = date.getFullYear();
-            document.getElementById('outRefNum').innerText = document.getElementById('inRef').value || ".......";
             document.getElementById('outCoord').innerText = coord;
+            document.getElementById('outRefNum').innerText = refNum || ".......";
 
             const tbody = document.getElementById('outBody'); tbody.innerHTML = "";
             let curr = new Date(date); let m = date.getMonth();
@@ -263,8 +292,7 @@
                 curr.setDate(curr.getDate()+1);
             }
             
-            const noteArea = document.getElementById('outVacNote');
-            noteArea.innerText = (vac && vS && vE) ? `ملاحظة: السيد(ة) ${vac} في عطلة سنوية من ${vS.toLocaleDateString('en-GB')} إلى ${vE.toLocaleDateString('en-GB')}` : "";
+            document.getElementById('outVacNote').innerText = (vac && vS && vE) ? `ملاحظة: السيد(ة) ${vac} في عطلة من ${vS.toLocaleDateString('en-GB')} إلى ${vE.toLocaleDateString('en-GB')}` : "";
 
             document.getElementById('setupOverlay').style.display='none';
             document.getElementById('toolbar').style.display='block';
@@ -272,7 +300,7 @@
         }
 
         function goBack() {
-            document.getElementById('setupOverlay').style.display='flex';
+            document.getElementById('setupOverlay').style.display='block';
             document.getElementById('toolbar').style.display='none';
             document.getElementById('paperA4').style.display='none';
         }
