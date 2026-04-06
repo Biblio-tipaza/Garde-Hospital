@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مداومة مستشفى قوراية</title>
     <style>
-        /* التنسيقات الأصلية كما هي دون تغيير */
+        /* التنسيقات الأصلية - لم يتم تغيير أي شيء */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #005f6b; background-image: url('poto.jpg'); background-size: cover; background-position: center; }
@@ -86,6 +86,15 @@
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
                     <div class="field"><label>اختيار المنسق:</label><select id="inCoord"></select></div>
                     <div class="field"><label>موظف في عطلة:</label><select id="inVacStaff"></select></div>
+                    
+                    <div class="field">
+                        <label>نوع العطلة:</label>
+                        <select id="inVacType">
+                            <option value="سنوية">سنوية</option>
+                            <option value="مرضية">مرضية</option>
+                        </select>
+                    </div>
+
                     <div class="field"><label>بداية العطلة:</label><input type="date" id="inVacS"></div>
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
                     
@@ -138,6 +147,7 @@
                 <tbody id="outBody"></tbody>
             </table>
             <div id="outVacNote" style="margin-top:5px; font-weight:bold; text-align:right; font-size:11pt;"></div>
+            
             <div class="footer-area">
                 <div style="text-align:center">إطار وحدة التخدير<br>والإنعاش</div>
                 <div style="text-align:center">رئيسة وحدة التخدير<br>والإنعاش</div>
@@ -147,8 +157,8 @@
     </div>
 
     <script>
-        let personnel = ["بن رقية شيراز", "عريج حورية", "براهمي امين", "زحالي خيرة", "بن عمار رانيا", "براهمي كهينة", "عبدي اسيا", "بن وحليمة راضية", "ايماموين حميد", "عيدار عبد الحكيم"];
-
+        let personnel = ["بن رقية شيراز", "بن عمار رانيا", "براهمي كهينة", "ايماموين حميد", "عيدار عبد الحكيم", "بن وحليمة راضية", "عريج حورية", "براهمي امين", "ازحالي خيرة", "عبدي اسيا"];
+        
         function populateDropdowns() {
             const cs = document.getElementById('inCoord');
             const vs = document.getElementById('inVacStaff');
@@ -185,19 +195,16 @@
             }
         }
 
-        // دالة جلب الموظف المعدلة: بسيطة وتعتمد على القائمة الممررة لها فقط
-        function getStaff(list, base, off) {
-            let n = list.length;
-            if (n === 0) return "---";
-            return list[((base + off) % n + n) % n];
-        }
-
         function generate() {
             const dVal = document.getElementById('inFullDate').value; if(!dVal) return;
             const coord = document.getElementById('inCoord').value;
             const vac = document.getElementById('inVacStaff').value;
-            const vS = document.getElementById('inVacS').value ? new Date(document.getElementById('inVacS').value) : null;
-            const vE = document.getElementById('inVacE').value ? new Date(document.getElementById('inVacE').value) : null;
+            const vacType = document.getElementById('inVacType').value; // جلب نوع العطلة
+            const vSStr = document.getElementById('inVacS').value;
+            const vEStr = document.getElementById('inVacE').value;
+            
+            const vS = vSStr ? new Date(vSStr) : null;
+            const vE = vEStr ? new Date(vEStr) : null;
             if(vS) vS.setHours(0,0,0,0); if(vE) vE.setHours(0,0,0,0);
 
             const date = new Date(dVal);
@@ -210,38 +217,94 @@
             document.getElementById('outCoord').innerText = coord;
 
             const tbody = document.getElementById('outBody'); tbody.innerHTML = "";
-            let curr = new Date(date); let m = date.getMonth();
-            const ref = new Date(date.getFullYear(), 0, 1);
+            let list = personnel.filter(p => p !== coord);
+            let scheduleData = [];
+            
+            let tempDate = new Date(date);
+            let m = date.getMonth();
+            while(tempDate.getMonth() === m) {
+                scheduleData.push({
+                    date: new Date(tempDate),
+                    dayName: tempDate.toLocaleDateString('ar-DZ', {weekday: 'long'}),
+                    isW: (tempDate.toLocaleDateString('ar-DZ', {weekday: 'long'}) === 'الجمعة' || tempDate.toLocaleDateString('ar-DZ', {weekday: 'long'}) === 'السبت'),
+                    staffA: "", staffB: "", staffC: ""
+                });
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
 
-            while(curr.getMonth() === m) {
-                let day = curr.toLocaleDateString('ar-DZ', {weekday: 'long'});
-                let isW = (day === 'الجمعة' || day === 'السبت');
-                let diff = Math.floor((curr - ref)/(86400000));
-                
-                // --- المنطق الجديد: إنشاء قائمة نشطة لكل يوم ---
-                let currentAvailable = personnel.filter(p => p !== coord);
-                
-                // إذا كان الموظف في عطلة، نحذفه من القائمة النشطة لهذا اليوم تحديداً
-                if (vac && vS && vE) {
-                    let checkDate = new Date(curr);
-                    checkDate.setHours(0,0,0,0);
-                    if (checkDate >= vS && checkDate <= vE) {
-                        currentAvailable = currentAvailable.filter(p => p !== vac);
+            // توزيع القاعة C
+            let cPtr = 0;
+            for(let i=0; i < scheduleData.length; i++) {
+                let attempts = 0;
+                while(attempts < list.length) {
+                    let candidate = list[cPtr % list.length];
+                    let inVac = (vac && candidate === vac && vS && vE && scheduleData[i].date >= vS && scheduleData[i].date <= vE);
+                    if(!inVac) {
+                        scheduleData[i].staffC = candidate;
+                        cPtr++;
+                        break;
                     }
+                    cPtr++;
+                    attempts++;
+                }
+            }
+
+            // توزيع القاعة A و B مع فحص الصلاحية
+            let dPtr = 0;
+            for(let i=0; i < scheduleData.length; i++) {
+                let usedToday = [scheduleData[i].staffC];
+                const isAvailable = (name, index) => {
+                    if (usedToday.includes(name)) return false;
+                    if (vac && name === vac && vS && vE && scheduleData[index].date >= vS && scheduleData[index].date <= vE) return false;
+                    if (index > 0 && scheduleData[index-1].staffC === name) return false;
+                    if (index < scheduleData.length - 1 && scheduleData[index+1].staffC === name) return false;
+                    return true;
+                };
+
+                // القاعة A
+                let attemptsA = 0;
+                while(attemptsA < list.length) {
+                    let candidate = list[dPtr % list.length];
+                    if(isAvailable(candidate, i)) {
+                        scheduleData[i].staffA = candidate;
+                        usedToday.push(candidate);
+                        dPtr++;
+                        break;
+                    }
+                    dPtr++;
+                    attemptsA++;
                 }
 
-                tbody.innerHTML += `<tr class="${isW?'weekend-bg':''}">
-                    <td>${curr.toLocaleDateString('en-GB')}</td>
-                    <td>${day}</td>
-                    <td>${getStaff(currentAvailable, diff, 3)}</td>
-                    <td>${isW ? '' : getStaff(currentAvailable, diff, 6)}</td>
-                    <td>${getStaff(currentAvailable, diff, 0)}</td>
-                </tr>`;
-                curr.setDate(curr.getDate()+1);
+                // القاعة B
+                if(!scheduleData[i].isW) {
+                    let attemptsB = 0;
+                    while(attemptsB < list.length) {
+                        let candidate = list[dPtr % list.length];
+                        if(isAvailable(candidate, i)) {
+                            scheduleData[i].staffB = candidate;
+                            usedToday.push(candidate);
+                            dPtr++;
+                            break;
+                        }
+                        dPtr++;
+                        attemptsB++;
+                    }
+                }
             }
+
+            scheduleData.forEach(row => {
+                tbody.innerHTML += `<tr class="${row.isW?'weekend-bg':''}">
+                    <td>${row.date.toLocaleDateString('en-GB')}</td>
+                    <td>${row.dayName}</td>
+                    <td>${row.staffA}</td>
+                    <td>${row.staffB}</td>
+                    <td>${row.staffC}</td>
+                </tr>`;
+            });
             
+            // تحديث نص الملاحظة بناءً على نوع العطلة المختار
             const noteArea = document.getElementById('outVacNote');
-            noteArea.innerText = (vac && vS && vE) ? `ملاحظة: السيد(ة) ${vac} في عطلة سنوية من ${vS.toLocaleDateString('en-GB')} إلى ${vE.toLocaleDateString('en-GB')}` : "";
+            noteArea.innerText = (vac && vS && vE) ? `ملاحظة: السيد(ة) ${vac} في عطلة ${vacType} من ${vS.toLocaleDateString('en-GB')} إلى ${vE.toLocaleDateString('en-GB')}` : "";
 
             document.getElementById('setupOverlay').style.display='none';
             document.getElementById('toolbar').style.display='block';
