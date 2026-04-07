@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مداومة مستشفى قوراية - نسخة 2026 المحدثة</title>
+    <title>نظام مداومة مستشفى قوراية - نسخة 2026 الذكية</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -71,7 +71,7 @@
     <div id="mainSystem">
         <div id="setupOverlay" class="setup-overlay no-print">
             <div class="config-window">
-                <div class="config-title-box"><h2>إعدادات جدول المداومة - نسخة 2026</h2></div>
+                <div class="config-title-box"><h2>إعدادات المداومة - نسخة منع التكرار الليلي</h2></div>
                 <div class="input-grid">
                     <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
@@ -82,7 +82,7 @@
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
                     
                     <div class="actions-row">
-                        <button class="btn-generate" onclick="generate()">توليد الجدول (تسلسل ليلي + توزيع نهار عادل)</button>
+                        <button class="btn-generate" onclick="generate()">توليد الجدول وتصحيح التكرار</button>
                         <button class="btn-exit" onclick="location.reload()">خروج</button>
                     </div>
                 </div>
@@ -134,12 +134,7 @@
     </div>
 
     <script>
-        const nightRotationList = [
-            "براهمي امين", "براهمي كهينة", "عبدي اسيا", "بن عمار رانيا", 
-            "زحالي خيرة", "ايماموين حميد", "عيدار عبدالحكيم", 
-            "بن وحليمة راضية", "عريج حورية"
-        ];
-
+        const nightRotationList = ["براهمي امين", "براهمي كهينة", "عبدي اسيا", "بن عمار رانيا", "زحالي خيرة", "ايماموين حميد", "عيدار عبدالحكيم", "بن وحليمة راضية", "عريج حورية"];
         const allPersonnel = [...nightRotationList, "بن رقية شراز"];
 
         function populateDropdowns(keepCoord = false) {
@@ -151,9 +146,7 @@
                 cs.value = "بن رقية شراز";
             }
             vs.innerHTML = '<option value="">-- لا يوجد --</option>';
-            allPersonnel.forEach(n => {
-                if(n !== cs.value) vs.innerHTML += `<option value="${n}">${n}</option>`;
-            });
+            allPersonnel.forEach(n => { if(n !== cs.value) vs.innerHTML += `<option value="${n}">${n}</option>`; });
         }
 
         function checkLogin() {
@@ -185,7 +178,6 @@
             let targetMonth = startDate.getMonth();
             let dayRecords = [];
 
-            // 1. إنشاء سجلات الأيام
             while(tempDate.getMonth() === targetMonth) {
                 dayRecords.push({
                     date: new Date(tempDate),
@@ -198,37 +190,57 @@
 
             let workCounts = {};
             allPersonnel.forEach(p => workCounts[p] = 0);
-            
-            let nightIndex = parseInt(localStorage.getItem('hospital_night_idx')) || 0;
 
-            // 2. توزيع المناوبة الليلية أولاً (المرحلة الأساسية)
+            // التاريخ المرجعي (1 أفريل 2026 هو بداية براهمي أمين)
+            const referenceDate = new Date("2026-04-01");
+            
+            // متغير لتراكم أيام الغياب (الإزاحة الكلية)
+            let totalShiftOffset = 0;
+
+            // حساب الإزاحة التراكمية من التاريخ المرجعي إلى تاريخ بداية الشهر المختار
+            // هذا الجزء يضمن استمرارية الدورة من شهر لآخر
+            let calcDate = new Date(referenceDate);
+            while(calcDate < startDate) {
+                const isVac = (name) => (name === vacStaff && vS && vE && calcDate >= vS && calcDate <= vE);
+                let diffDays = Math.floor((calcDate - referenceDate) / (1000 * 60 * 60 * 24));
+                let candidate = nightRotationList[(diffDays + totalShiftOffset) % nightRotationList.length];
+                
+                if(isVac(candidate)) {
+                    totalShiftOffset++; // إزاحة الدورة بالكامل ليوم واحد
+                }
+                calcDate.setDate(calcDate.getDate() + 1);
+            }
+
+            // توليد أيام الشهر الحالي مع معالجة العطلات
             for(let i = 0; i < dayRecords.length; i++) {
                 let today = dayRecords[i].date;
                 const isVac = (name) => (name === vacStaff && vS && vE && today >= vS && today <= vE);
+
+                let diffDays = Math.floor((today - referenceDate) / (1000 * 60 * 60 * 24));
                 
-                let nStaff = nightRotationList[nightIndex % nightRotationList.length];
-                dayRecords[i].nightStaffRaw = nStaff;
-                dayRecords[i].C = nStaff + (isVac(nStaff) ? " (عطلة)" : "");
-                workCounts[nStaff]++;
-                nightIndex++;
+                let found = false;
+                while(!found) {
+                    let candidate = nightRotationList[(diffDays + totalShiftOffset) % nightRotationList.length];
+                    if (isVac(candidate)) {
+                        totalShiftOffset++; // إزاحة تراكمية للمستقبل لمنع التكرار
+                    } else {
+                        dayRecords[i].nightStaffRaw = candidate;
+                        dayRecords[i].C = candidate;
+                        workCounts[candidate]++;
+                        found = true;
+                    }
+                }
             }
 
-            // حفظ المؤشر للشهر القادم
-            localStorage.setItem('hospital_night_idx', nightIndex);
-
-            // 3. توزيع المناوبة النهارية (المرحلة المتوازنة)
+            // توزيع المداومة النهارية
             for(let i = 0; i < dayRecords.length; i++) {
                 let today = dayRecords[i].date;
                 const isVac = (name) => (name === vacStaff && vS && vE && today >= vS && today <= vE);
                 let currentNightStaff = dayRecords[i].nightStaffRaw;
 
-                // الموظفون المتاحون للنهار: ليس المنسق، ليس من يعمل ليل اليوم، وليس في عطلة
                 let candidates = allPersonnel.filter(p => p !== coord && p !== currentNightStaff && !isVac(p));
-                
-                // ترتيبهم حسب عدد أيام العمل الإجمالي لضمان التوازن
                 candidates.sort((a, b) => workCounts[a] - workCounts[b]);
 
-                // تعيين القاعة A
                 if(candidates.length > 0) {
                     let pA = candidates[0];
                     dayRecords[i].A = pA;
@@ -236,7 +248,6 @@
                     candidates.shift();
                 }
 
-                // تعيين القاعة B (ماعدا الجمعة والسبت)
                 if(!dayRecords[i].isWeekend && candidates.length > 0) {
                     let pB = candidates[0];
                     dayRecords[i].B = pB;
@@ -244,7 +255,6 @@
                 }
             }
 
-            // 4. بناء الجدول النهائي
             dayRecords.forEach(row => {
                 tbody.innerHTML += `
                     <tr class="${row.isWeekend ? 'weekend-bg' : ''}">
