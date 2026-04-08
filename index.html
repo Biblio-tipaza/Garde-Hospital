@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مداومة مستشفى قوراية - نسخة 2026 الذكية</title>
+    <title>نظام مداومة مستشفى قوراية - نسخة 2026 الاحترافية</title>
     <style>
+        /* التنسيقات الأصلية كما هي لضمان المظهر */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #005f6b; background-image: url('poto.jpg'); background-size: cover; background-position: center; }
@@ -71,7 +72,7 @@
     <div id="mainSystem">
         <div id="setupOverlay" class="setup-overlay no-print">
             <div class="config-window">
-                <div class="config-title-box"><h2>إعدادات المداومة - نسخة منع التكرار الليلي</h2></div>
+                <div class="config-title-box"><h2>إعدادات المداومة - نسخة الحماية الثلاثية</h2></div>
                 <div class="input-grid">
                     <div class="field"><label>تاريخ بداية الجدول:</label><input type="date" id="inFullDate" value="2026-04-01"></div>
                     <div class="field"><label>رقم القرار الإداري:</label><input type="text" id="inRef" placeholder="مثال: 450"></div>
@@ -82,7 +83,7 @@
                     <div class="field"><label>نهاية العطلة:</label><input type="date" id="inVacE"></div>
                     
                     <div class="actions-row">
-                        <button class="btn-generate" onclick="generate()">توليد الجدول وتصحيح التكرار</button>
+                        <button class="btn-generate" onclick="generate()">توليد الجدول مع منع التداخل</button>
                         <button class="btn-exit" onclick="location.reload()">خروج</button>
                     </div>
                 </div>
@@ -183,7 +184,7 @@
                     date: new Date(tempDate),
                     dayName: tempDate.toLocaleDateString('ar-DZ', {weekday: 'long'}),
                     isWeekend: (tempDate.getDay() === 5 || tempDate.getDay() === 6),
-                    A: "", B: "", C: "", nightStaffRaw: ""
+                    A: "", B: "", C: ""
                 });
                 tempDate.setDate(tempDate.getDate() + 1);
             }
@@ -191,40 +192,22 @@
             let workCounts = {};
             allPersonnel.forEach(p => workCounts[p] = 0);
 
-            // التاريخ المرجعي (1 أفريل 2026 هو بداية براهمي أمين)
+            // التاريخ المرجعي والمناوبة الليلية (القاعة C)
             const referenceDate = new Date("2026-04-01");
-            
-            // متغير لتراكم أيام الغياب (الإزاحة الكلية)
             let totalShiftOffset = 0;
 
-            // حساب الإزاحة التراكمية من التاريخ المرجعي إلى تاريخ بداية الشهر المختار
-            // هذا الجزء يضمن استمرارية الدورة من شهر لآخر
-            let calcDate = new Date(referenceDate);
-            while(calcDate < startDate) {
-                const isVac = (name) => (name === vacStaff && vS && vE && calcDate >= vS && calcDate <= vE);
-                let diffDays = Math.floor((calcDate - referenceDate) / (1000 * 60 * 60 * 24));
-                let candidate = nightRotationList[(diffDays + totalShiftOffset) % nightRotationList.length];
-                
-                if(isVac(candidate)) {
-                    totalShiftOffset++; // إزاحة الدورة بالكامل ليوم واحد
-                }
-                calcDate.setDate(calcDate.getDate() + 1);
-            }
-
-            // توليد أيام الشهر الحالي مع معالجة العطلات
+            // حساب المداومة الليلية أولاً لأنها هي الأساس
             for(let i = 0; i < dayRecords.length; i++) {
                 let today = dayRecords[i].date;
                 const isVac = (name) => (name === vacStaff && vS && vE && today >= vS && today <= vE);
-
                 let diffDays = Math.floor((today - referenceDate) / (1000 * 60 * 60 * 24));
                 
                 let found = false;
                 while(!found) {
                     let candidate = nightRotationList[(diffDays + totalShiftOffset) % nightRotationList.length];
                     if (isVac(candidate)) {
-                        totalShiftOffset++; // إزاحة تراكمية للمستقبل لمنع التكرار
+                        totalShiftOffset++;
                     } else {
-                        dayRecords[i].nightStaffRaw = candidate;
                         dayRecords[i].C = candidate;
                         workCounts[candidate]++;
                         found = true;
@@ -232,15 +215,34 @@
                 }
             }
 
-            // توزيع المداومة النهارية
+            // توزيع المداومة النهارية (A و B) مع حماية الـ 3 أيام
             for(let i = 0; i < dayRecords.length; i++) {
                 let today = dayRecords[i].date;
                 const isVac = (name) => (name === vacStaff && vS && vE && today >= vS && today <= vE);
-                let currentNightStaff = dayRecords[i].nightStaffRaw;
 
-                let candidates = allPersonnel.filter(p => p !== coord && p !== currentNightStaff && !isVac(p));
+                // استخراج الشخص الذي يعمل في الليل: اليوم السابق، اليوم الحالي، واليوم التالي
+                let nightShiftPeopleToAvoid = [];
+                if (i > 0) nightShiftPeopleToAvoid.push(dayRecords[i-1].C); // تجنب من سيعمل غداً
+                nightShiftPeopleToAvoid.push(dayRecords[i].C);             // تجنب من يعمل الليلة
+                if (i < dayRecords.length - 1) {
+                    // هنا نحسب من سيعمل ليلة الغد لنتجنبه اليوم نهاراً
+                    let tomorrow = dayRecords[i+1].date;
+                    let diffTomorrow = Math.floor((tomorrow - referenceDate) / (1000 * 60 * 60 * 24));
+                    // ملاحظة: هذا تقديري لأن العطلات قد تغيره، لكن dayRecords[i+1].C جاهز أصلاً
+                    nightShiftPeopleToAvoid.push(dayRecords[i+1].C);
+                }
+
+                // المرشحون هم كل الموظفين عدا: المنسق، الغائبين، ومن لديهم مناوبة ليلية (أمس/اليوم/غداً)
+                let candidates = allPersonnel.filter(p => 
+                    p !== coord && 
+                    !nightShiftPeopleToAvoid.includes(p) && 
+                    !isVac(p)
+                );
+
+                // ترتيب حسب الأقل عملاً لضمان العدالة
                 candidates.sort((a, b) => workCounts[a] - workCounts[b]);
 
+                // توزيع القاعة A
                 if(candidates.length > 0) {
                     let pA = candidates[0];
                     dayRecords[i].A = pA;
@@ -248,6 +250,7 @@
                     candidates.shift();
                 }
 
+                // توزيع القاعة B (فقط في غير عطلة نهاية الأسبوع)
                 if(!dayRecords[i].isWeekend && candidates.length > 0) {
                     let pB = candidates[0];
                     dayRecords[i].B = pB;
@@ -255,6 +258,7 @@
                 }
             }
 
+            // رسم الجدول
             dayRecords.forEach(row => {
                 tbody.innerHTML += `
                     <tr class="${row.isWeekend ? 'weekend-bg' : ''}">
